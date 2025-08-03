@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-Application<tup2024>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "ar.edu.utn.frbb.tup.Application",
+            "projectName": "tup2024",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
