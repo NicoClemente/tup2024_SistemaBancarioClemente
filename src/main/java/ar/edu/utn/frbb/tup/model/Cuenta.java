@@ -5,11 +5,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import ar.edu.utn.frbb.tup.model.exception.CantidadNegativaException;
+import ar.edu.utn.frbb.tup.model.exception.NoAlcanzaException;
+
 public class Cuenta {
     private long numeroCuenta;
     private LocalDateTime fechaCreacion;
     private double balance;
     private TipoCuenta tipoCuenta;
+    @JsonIgnore
     private Cliente titular;
     private TipoMoneda moneda;
     private List<Movimiento> movimientos;  

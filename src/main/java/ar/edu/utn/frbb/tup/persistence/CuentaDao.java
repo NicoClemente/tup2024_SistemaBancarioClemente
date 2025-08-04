@@ -27,14 +27,15 @@ public class CuentaDao  extends AbstractBaseDao{
     }
 
     public List<Cuenta> getCuentasByCliente(long dni) {
-        List<Cuenta> cuentasDelCliente = new ArrayList<>();
-        for (Object object:
-                getInMemoryDatabase().values()) {
-            CuentaEntity cuenta = ((CuentaEntity) object);
-            if (cuenta.getTitular().equals(dni)) {
-                cuentasDelCliente.add(cuenta.toCuenta());
-            }
+    List<Cuenta> cuentasDelCliente = new ArrayList<>();
+    for (Object object : getInMemoryDatabase().values()) {
+        CuentaEntity cuenta = ((CuentaEntity) object);
+        
+        // Chequea que el titular no sea null
+        if (cuenta.getTitular() != null && cuenta.getTitular().equals(dni)) {
+            cuentasDelCliente.add(cuenta.toCuenta());
         }
-        return cuentasDelCliente;
     }
+    return cuentasDelCliente;
+}
 }

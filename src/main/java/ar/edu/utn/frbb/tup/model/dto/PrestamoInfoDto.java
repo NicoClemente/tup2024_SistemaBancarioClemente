@@ -5,14 +5,16 @@ public class PrestamoInfoDto {
     private int plazoMeses;
     private int pagosRealizados;
     private double saldoRestante;
+    private String moneda;
 
     public PrestamoInfoDto() {}
 
-    public PrestamoInfoDto(double monto, int plazoMeses, int pagosRealizados, double saldoRestante) {
+    public PrestamoInfoDto(double monto, int plazoMeses, int pagosRealizados, double saldoRestante, String moneda) {
         this.monto = monto;
         this.plazoMeses = plazoMeses;
         this.pagosRealizados = pagosRealizados;
         this.saldoRestante = saldoRestante;
+        this.moneda = moneda;
     }
 
     // Getters y Setters
@@ -27,4 +29,7 @@ public class PrestamoInfoDto {
 
     public double getSaldoRestante() { return saldoRestante; }
     public void setSaldoRestante(double saldoRestante) { this.saldoRestante = saldoRestante; }
+
+    public String getMoneda() { return moneda; }
+    public void setMoneda(String moneda) { this.moneda = moneda; }
 }

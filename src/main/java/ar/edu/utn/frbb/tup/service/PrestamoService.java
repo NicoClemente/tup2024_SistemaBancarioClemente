@@ -2,6 +2,7 @@ package ar.edu.utn.frbb.tup.service;
 
 import ar.edu.utn.frbb.tup.model.*;
 import ar.edu.utn.frbb.tup.model.dto.*;
+import ar.edu.utn.frbb.tup.model.exception.CantidadNegativaException;
 import ar.edu.utn.frbb.tup.persistence.PrestamoDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -170,7 +171,8 @@ public class PrestamoService {
             prestamo.getMontoPrestamo(),
             prestamo.getPlazoMeses(),
             prestamo.getPagosRealizados(),
-            prestamo.getSaldoRestante()
+            prestamo.getSaldoRestante(),
+            prestamo.getMoneda()
         );
     }
 }

@@ -65,8 +65,9 @@ public class Prestamo {
      * Donde: P = monto principal, r = tasa mensual, n = número de cuotas
      */
     public double calcularCuotaMensual() {
-        double tasaMensual = tasaInteresAnual / 12;
-        double factor = Math.pow(1 + tasaMensual, plazoMeses);
-        return montoPrestamo * (tasaMensual * factor) / (factor - 1);
-    }
+    double tasaMensual = tasaInteresAnual / 12;
+    double factor = Math.pow(1 + tasaMensual, plazoMeses);
+    double cuota = montoPrestamo * (tasaMensual * factor) / (factor - 1);        
+    return Math.round(cuota * 100.0) / 100.0;
+}
 }
