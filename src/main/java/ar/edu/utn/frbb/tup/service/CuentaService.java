@@ -19,34 +19,40 @@ public class CuentaService {
     @Autowired
     ClienteService clienteService;
 
-    public Cuenta darDeAltaCuenta(CuentaDto cuentaDto) throws CuentaAlreadyExistsException, TipoCuentaAlreadyExistsException {
+     public Cuenta darDeAltaCuenta(CuentaDto cuentaDto) throws CuentaAlreadyExistsException, TipoCuentaAlreadyExistsException {
+        // Crea la cuenta con los datos básicos
         Cuenta cuenta = new Cuenta();
         cuenta.setTipoCuenta(TipoCuenta.valueOf(cuentaDto.getTipoCuenta().toUpperCase()));
         cuenta.setMoneda(TipoMoneda.valueOf(cuentaDto.getTipoMoneda().toUpperCase()));
         cuenta.setBalance(cuentaDto.getSaldoInicial());
 
+        // Validaciones de la cuenta
         if(cuentaDao.find(cuenta.getNumeroCuenta()) != null) {
             throw new CuentaAlreadyExistsException("La cuenta " + cuenta.getNumeroCuenta() + " ya existe.");
         }
 
-        // Valida que el tipo de cuenta esté soportado
         if (!tipoCuentaEstaSoportada(cuenta)) {
             throw new IllegalArgumentException("Tipo de cuenta no soportado");
         }
 
-        clienteService.agregarCuenta(cuenta, cuentaDto.getDniTitular());
-        cuentaDao.save(cuenta);
+        // Busca el cliente
+        Cliente titular = clienteService.buscarClientePorDni(cuentaDto.getDniTitular());
         
-        // Si tiene saldo inicial, registra depósito inicial
-        if (cuentaDto.getSaldoInicial() > 0) {
-            try {
-                Movimiento movimientoInicial = new Movimiento(TipoOperacion.DEPOSITO, cuentaDto.getSaldoInicial(), cuenta.getNumeroCuenta());
-                movimientoInicial.setDescripcion("Depósito inicial");
-                cuenta.agregarMovimiento(movimientoInicial);
-                cuentaDao.save(cuenta);
-            } catch (Exception e) {                
-            }
+        // Valida que el cliente no tenga ya una cuenta igual
+        if (clienteYaTieneCuentaDelTipo(titular, cuenta.getTipoCuenta(), cuenta.getMoneda())) {
+            throw new TipoCuentaAlreadyExistsException("El cliente ya posee una cuenta de ese tipo y moneda");
         }
+
+        // Asocia la cuenta al cliente
+        cuenta.setTitular(titular);
+        titular.addCuenta(cuenta);
+
+        // Guarda todo
+        cuentaDao.save(cuenta);
+        clienteService.guardarCliente(titular);
+        
+        // Registra depósito inicial si corresponde
+        registrarDepositoInicial(cuenta, cuentaDto.getSaldoInicial());
         
         return cuenta;
     }
@@ -81,6 +87,22 @@ public class CuentaService {
             throw new IllegalArgumentException("La cuenta no existe");
         }
         return cuenta.getMovimientos();
+    }
+
+    private boolean clienteYaTieneCuentaDelTipo(Cliente cliente, TipoCuenta tipoCuenta, TipoMoneda tipoMoneda) {
+        return cliente.tieneCuenta(tipoCuenta, tipoMoneda);
+    }
+    
+    private void registrarDepositoInicial(Cuenta cuenta, double saldoInicial) {
+        if (saldoInicial > 0) {
+            try {
+                Movimiento movimientoInicial = new Movimiento(TipoOperacion.DEPOSITO, saldoInicial, cuenta.getNumeroCuenta());
+                movimientoInicial.setDescripcion("Depósito inicial");
+                cuenta.agregarMovimiento(movimientoInicial);
+                cuentaDao.save(cuenta);
+            } catch (Exception e) {                
+            }
+        }
     }
 
     private boolean tipoCuentaEstaSoportada(Cuenta cuenta) {

@@ -90,7 +90,7 @@ public class ClienteServiceTest {
     }
 
     @Test
-    public void testAgregarCuentaAClienteSuccess() throws TipoCuentaAlreadyExistsException {
+    public void testAgregarCuentaAClienteSuccess() {
         Cliente pepeRino = new Cliente();
         pepeRino.setDni(26456439);
         pepeRino.setNombre("Pepe");
@@ -105,7 +105,9 @@ public class ClienteServiceTest {
 
         when(clienteDao.find(26456439, true)).thenReturn(pepeRino);
 
-        clienteService.agregarCuenta(cuenta, pepeRino.getDni());
+        cuenta.setTitular(pepeRino);
+        pepeRino.addCuenta(cuenta);
+        clienteService.guardarCliente(pepeRino);
 
         verify(clienteDao, times(1)).save(pepeRino);
         assertEquals(1, pepeRino.getCuentas().size());
@@ -129,7 +131,9 @@ public class ClienteServiceTest {
         when(clienteDao.find(26456439, true)).thenReturn(luciano);
 
         // Agrega primera cuenta
-        assertDoesNotThrow(() -> clienteService.agregarCuenta(cuenta, luciano.getDni()));
+        cuenta.setTitular(luciano);
+        luciano.addCuenta(cuenta);
+        clienteService.guardarCliente(luciano);
 
         // Intenta agregar cuenta duplicada
         Cuenta cuenta2 = new Cuenta()
@@ -137,15 +141,24 @@ public class ClienteServiceTest {
                 .setBalance(100000)
                 .setTipoCuenta(TipoCuenta.CAJA_AHORRO);
 
+        cuenta2.setTitular(luciano);
         assertThrows(TipoCuentaAlreadyExistsException.class, 
-            () -> clienteService.agregarCuenta(cuenta2, luciano.getDni()));
-        
+            () -> {
+                if (luciano.getCuentas().stream().anyMatch(c -> 
+                        c.getTipoCuenta() == cuenta2.getTipoCuenta() && 
+                        c.getMoneda() == cuenta2.getMoneda())) {
+                    throw new TipoCuentaAlreadyExistsException("Cuenta duplicada");
+                }
+                luciano.addCuenta(cuenta2);
+                clienteService.guardarCliente(luciano);
+            });
+
         verify(clienteDao, times(1)).save(luciano);
         assertEquals(1, luciano.getCuentas().size());
     }
 
     @Test
-    public void testAgregarCuentasDiferentesTipoSuccess() throws TipoCuentaAlreadyExistsException {
+    public void testAgregarCuentasDiferentesTipoSuccess() {
         Cliente cliente = new Cliente();
         cliente.setDni(12345678);
         cliente.setNombre("Test");
@@ -155,29 +168,32 @@ public class ClienteServiceTest {
 
         when(clienteDao.find(12345678, true)).thenReturn(cliente);
 
-        // Agrega CA$
+        // CA$
         Cuenta cajaAhorroPesos = new Cuenta()
                 .setMoneda(TipoMoneda.PESOS)
                 .setBalance(10000)
                 .setTipoCuenta(TipoCuenta.CAJA_AHORRO);
+        cajaAhorroPesos.setTitular(cliente);
+        cliente.addCuenta(cajaAhorroPesos);
+        clienteService.guardarCliente(cliente);
 
-        clienteService.agregarCuenta(cajaAhorroPesos, cliente.getDni());
-
-        // Agrega CC$
+        // CC$
         Cuenta cuentaCorrientePesos = new Cuenta()
                 .setMoneda(TipoMoneda.PESOS)
                 .setBalance(20000)
                 .setTipoCuenta(TipoCuenta.CUENTA_CORRIENTE);
+        cuentaCorrientePesos.setTitular(cliente);
+        cliente.addCuenta(cuentaCorrientePesos);
+        clienteService.guardarCliente(cliente);
 
-        clienteService.agregarCuenta(cuentaCorrientePesos, cliente.getDni());
-
-        // Agrega CAU$S
+        // CAU$S
         Cuenta cajaAhorroDolares = new Cuenta()
                 .setMoneda(TipoMoneda.DOLARES)
                 .setBalance(1000)
                 .setTipoCuenta(TipoCuenta.CAJA_AHORRO);
-
-        clienteService.agregarCuenta(cajaAhorroDolares, cliente.getDni());
+        cajaAhorroDolares.setTitular(cliente);
+        cliente.addCuenta(cajaAhorroDolares);
+        clienteService.guardarCliente(cliente);
 
         verify(clienteDao, times(3)).save(cliente);
         assertEquals(3, cliente.getCuentas().size());

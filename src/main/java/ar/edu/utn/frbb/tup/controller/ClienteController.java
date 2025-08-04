@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controlador REST para la gestión de clientes bancarios.
+ * Proporciona endpoints para operaciones CRUD de clientes.
+ */
 @RestController
 @RequestMapping("/cliente")
 public class ClienteController {
@@ -21,12 +25,33 @@ public class ClienteController {
     @Autowired
     private ClienteValidator clienteValidator;
 
+    /**
+     * Endpoint para crear un nuevo cliente en el sistema bancario.
+     * Valida los datos del cliente antes de proceder con la creación.
+     * 
+     * @param clienteDto Datos del cliente a crear
+     * @return Cliente creado con éxito
+     * @throws ClienteAlreadyExistsException si el cliente ya existe en el sistema
+     * 
+     * POST /cliente
+     */
     @PostMapping
     public Cliente crearCliente(@RequestBody ClienteDto clienteDto) throws ClienteAlreadyExistsException {
+        // Valida datos de entrada
         clienteValidator.validate(clienteDto);
+
+        // Procesa alta de cliente
         return clienteService.darDeAltaCliente(clienteDto);
     }
 
+    /**
+     * Endpoint para buscar un cliente específico por su DNI.
+     * 
+     * @param dni Número de documento del cliente a buscar
+     * @return ResponseEntity con el cliente encontrado o 404 si no existe
+     * 
+     * GET /cliente/{dni}
+     */
     @GetMapping("/{dni}")
     public ResponseEntity<Cliente> buscarCliente(@PathVariable long dni) {
         try {
@@ -37,12 +62,29 @@ public class ClienteController {
         }
     }
 
+    /**
+     * Endpoint para obtener la lista completa de clientes registrados.
+     * 
+     * @return ResponseEntity con la lista de todos los clientes
+     * 
+     * GET /cliente
+     */
     @GetMapping
     public ResponseEntity<List<Cliente>> obtenerTodosLosClientes() {
         List<Cliente> clientes = clienteService.obtenerTodosLosClientes();
         return ResponseEntity.ok(clientes);
     }
 
+    /**
+     * Endpoint para actualizar los datos de un cliente existente.
+     * Valida los nuevos datos antes de proceder con la actualización.
+     * 
+     * @param dni        DNI del cliente a actualizar
+     * @param clienteDto Nuevos datos del cliente
+     * @return ResponseEntity con el cliente actualizado o 404 si no existe
+     * 
+     * PUT /cliente/{dni}
+     */
     @PutMapping("/{dni}")
     public ResponseEntity<Cliente> actualizarCliente(@PathVariable long dni, @RequestBody ClienteDto clienteDto) {
         try {
@@ -54,6 +96,16 @@ public class ClienteController {
         }
     }
 
+    /**
+     * Endpoint para eliminar un cliente del sistema.
+     * Solo permite eliminar clientes sin cuentas con saldo positivo.
+     * 
+     * @param dni DNI del cliente a eliminar
+     * @return ResponseEntity vacío con código 200 si se eliminó correctamente, 404
+     *         si no existe
+     * 
+     * DELETE /cliente/{dni}
+     */
     @DeleteMapping("/{dni}")
     public ResponseEntity<Void> eliminarCliente(@PathVariable long dni) {
         try {
