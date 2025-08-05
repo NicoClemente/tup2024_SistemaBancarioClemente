@@ -9,6 +9,7 @@ import ar.edu.utn.frbb.tup.persistence.ClienteDao;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.List;
 
 /**
@@ -40,17 +41,16 @@ public class ClienteService {
      * @throws IllegalArgumentException      si el cliente es menor de 18 años
      */
     public Cliente darDeAltaCliente(ClienteDto clienteDto) throws ClienteAlreadyExistsException {
-        Cliente cliente = new Cliente(clienteDto);
-
         // Verifica que el cliente no exista
-        if (clienteDao.find(cliente.getDni(), false) != null) {
-            throw new ClienteAlreadyExistsException("Ya existe un cliente con DNI " + cliente.getDni());
+        if (clienteDao.find(clienteDto.getDni(), false) != null) {
+            throw new ClienteAlreadyExistsException("Ya existe un cliente con DNI " + clienteDto.getDni());
         }
 
-        // Valida edad mínima
-        if (cliente.getEdad() < 18) {
-            throw new IllegalArgumentException("El cliente debe ser mayor a 18 años");
-        }
+        // Valida edad mínima ANTES de crear el cliente
+        validateEdadMinima(clienteDto.getFechaNacimiento());
+
+        // Crea el cliente después de las validaciones
+        Cliente cliente = new Cliente(clienteDto);
 
         clienteDao.save(cliente);
         return cliente;
@@ -78,12 +78,9 @@ public class ClienteService {
 
         // Actualiza fecha de nacimiento si se proporciona
         if (clienteDto.getFechaNacimiento() != null) {
+            // Valida edad antes de actualizar
+            validateEdadMinima(clienteDto.getFechaNacimiento());
             clienteExistente.setFechaNacimiento(LocalDate.parse(clienteDto.getFechaNacimiento()));
-        }
-
-        // Valida edad después de la actualización
-        if (clienteExistente.getEdad() < 18) {
-            throw new IllegalArgumentException("El cliente debe ser mayor a 18 años");
         }
 
         clienteDao.save(clienteExistente);
@@ -144,5 +141,19 @@ public class ClienteService {
      */
     public void guardarCliente(Cliente cliente) {
         clienteDao.save(cliente);
+    }
+
+    /**
+     * Valida que el cliente sea mayor de 18 años.
+     * 
+     * @param fechaNacimiento Fecha de nacimiento en formato String
+     * @throws IllegalArgumentException si el cliente es menor de 18 años
+     */
+    private void validateEdadMinima(String fechaNacimiento) {
+        LocalDate fecha = LocalDate.parse(fechaNacimiento);
+        int edad = Period.between(fecha, LocalDate.now()).getYears();
+        if (edad < 18) {
+            throw new IllegalArgumentException("El cliente debe ser mayor a 18 años");
+        }
     }
 }

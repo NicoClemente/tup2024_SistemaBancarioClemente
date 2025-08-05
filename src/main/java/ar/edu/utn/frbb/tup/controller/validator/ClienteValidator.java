@@ -4,6 +4,7 @@ import ar.edu.utn.frbb.tup.model.dto.ClienteDto;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.Period;
 
 @Component
 public class ClienteValidator {
@@ -11,6 +12,7 @@ public class ClienteValidator {
     public void validate(ClienteDto clienteDto) {
         validateTipoPersona(clienteDto.getTipoPersona());
         validateFechaNacimiento(clienteDto.getFechaNacimiento());
+        validateEdad(clienteDto.getFechaNacimiento());
         validateNombre(clienteDto.getNombre());
         validateApellido(clienteDto.getApellido());
         validateDni(clienteDto.getDni());
@@ -33,6 +35,14 @@ public class ClienteValidator {
             LocalDate.parse(fechaNacimiento);
         } catch (Exception e) {
             throw new IllegalArgumentException("Error en el formato de fecha. Use el formato: YYYY-MM-DD");
+        }
+    }
+
+    private void validateEdad(String fechaNacimiento) {
+        LocalDate fecha = LocalDate.parse(fechaNacimiento);
+        int edad = Period.between(fecha, LocalDate.now()).getYears();
+        if (edad < 18) {
+            throw new IllegalArgumentException("El cliente debe ser mayor a 18 años");
         }
     }
 
@@ -79,7 +89,6 @@ public class ClienteValidator {
         if (telefono.length() < 8) {
             throw new IllegalArgumentException("El teléfono debe tener al menos 8 dígitos");
         }
-        // Valida que solo contenga números, espacios, guiones y paréntesis
         if (!telefono.matches("[0-9\\s\\-\\(\\)\\+]+")) {
             throw new IllegalArgumentException("El teléfono contiene caracteres no válidos");
         }

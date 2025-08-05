@@ -24,6 +24,16 @@ public class OperacionController {
     @Autowired
     private OperacionValidator operacionValidator;
 
+    /**
+     * Endpoint para realizar un depósito en una cuenta bancaria.
+     * Valida que el monto sea positivo y que la cuenta exista.
+     * 
+     * @param operacionDto Datos de la operación de depósito (número de cuenta y monto)
+     * @return ResponseEntity con la cuenta actualizada o error si la operación falla
+     * @throws CantidadNegativaException si el monto es negativo o cero
+     * 
+     * POST /operacion/deposito
+     */
     @PostMapping("/deposito")
     public ResponseEntity<Cuenta> depositar(@RequestBody OperacionDto operacionDto) {
         try {
@@ -38,14 +48,14 @@ public class OperacionController {
     }
 
     /**
-     * Endpoint para realizar un depósito en una cuenta bancaria.
+     * Endpoint para realizar un retiro en una cuenta bancaria.
      * Valida que el monto sea positivo y que la cuenta exista.
      * 
-     * @param operacionDto Datos de la operación de depósito (número de cuenta y monto)
+     * @param operacionDto Datos de la operación de retiro (número de cuenta y monto)
      * @return ResponseEntity con la cuenta actualizada o error si la operación falla
      * @throws CantidadNegativaException si el monto es negativo o cero
      * 
-     * POST /operacion/deposito
+     * POST /operacion/retiro
      */
     @PostMapping("/retiro")
     public ResponseEntity<Cuenta> retirar(@RequestBody OperacionDto operacionDto) {

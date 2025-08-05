@@ -26,16 +26,16 @@ public class MovimientoEntity {
         this.descripcion = movimiento.getDescripcion();
     }
 
-    public Movimiento toMovimiento() {
-        Movimiento movimiento = new Movimiento();
-        movimiento.setId(this.id);
-        movimiento.setFechaHora(this.fechaHora);
-        movimiento.setTipoOperacion(TipoOperacion.valueOf(this.tipoOperacion));
-        movimiento.setMonto(this.monto);
-        movimiento.setCuentaOrigen(this.cuentaOrigen);
-        movimiento.setCuentaDestino(this.cuentaDestino);
-        movimiento.setDescripcion(this.descripcion);
-        return movimiento;
+    public Movimiento toMovimiento() {        
+        return new Movimiento(
+            this.id,
+            this.fechaHora,
+            TipoOperacion.valueOf(this.tipoOperacion),
+            this.monto,
+            this.cuentaOrigen,
+            this.cuentaDestino,
+            this.descripcion
+        );
     }
 
     // Getters y Setters

@@ -1,8 +1,11 @@
 package ar.edu.utn.frbb.tup.model;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class Movimiento {
+    private static final AtomicLong contadorId = new AtomicLong(1L);
+    
     private Long id;
     private LocalDateTime fechaHora;
     private TipoOperacion tipoOperacion;
@@ -12,7 +15,20 @@ public class Movimiento {
     private String descripcion;
 
     public Movimiento() {
+        this.id = contadorId.getAndIncrement();
         this.fechaHora = LocalDateTime.now();
+    }
+
+    // Constructor para la capa de persistencia
+    public Movimiento(Long id, LocalDateTime fechaHora, TipoOperacion tipoOperacion, 
+                     double monto, Long cuentaOrigen, Long cuentaDestino, String descripcion) {
+        this.id = id;
+        this.fechaHora = fechaHora;
+        this.tipoOperacion = tipoOperacion;
+        this.monto = monto;
+        this.cuentaOrigen = cuentaOrigen;
+        this.cuentaDestino = cuentaDestino;
+        this.descripcion = descripcion;
     }
 
     public Movimiento(TipoOperacion tipoOperacion, double monto, Long cuentaOrigen) {
@@ -32,8 +48,10 @@ public class Movimiento {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setId(Long id) {        
+        if (this.id == null) {
+            this.id = id;
+        }
     }
 
     public LocalDateTime getFechaHora() {
