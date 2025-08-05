@@ -17,37 +17,42 @@ public class ScoreCrediticioServiceTest {
     public void testObtenerScoreEnRangoValido() {
         // El score debe estar entre 1 y 10
         for (int i = 0; i < 100; i++) {
-            int score = scoreCrediticioService.obtenerScore(12345678);
+            ScoreCrediticioService.ScoreResultado resultado = scoreCrediticioService.evaluarScore(12345678);
+            int score = resultado.getScore();
             assertTrue(score >= 1 && score <= 10);
         }
     }
 
     @Test
     public void testConsultarScoreRetornaBooleanValido() {
-        // El método consultarScore debe retornar boolean
-        boolean resultado1 = scoreCrediticioService.consultarScore(12345678);
-        boolean resultado2 = scoreCrediticioService.consultarScore(87654321);
+        // El método evaluarScore debe retornar resultado con boolean válido
+        ScoreCrediticioService.ScoreResultado resultado1 = scoreCrediticioService.evaluarScore(12345678);
+        ScoreCrediticioService.ScoreResultado resultado2 = scoreCrediticioService.evaluarScore(87654321);
         
         // Verifica que retorna boolean válido
-        assertTrue(resultado1 == true || resultado1 == false);
-        assertTrue(resultado2 == true || resultado2 == false);
+        boolean elegible1 = resultado1.isElegible();
+        boolean elegible2 = resultado2.isElegible();
+        assertTrue(elegible1 == true || elegible1 == false);
+        assertTrue(elegible2 == true || elegible2 == false);
     }
 
     @Test
     public void testEsElegibleParaPrestamoRetornaBooleanValido() {
-        // El método esElegibleParaPrestamo debe retornar boolean
-        boolean resultado1 = scoreCrediticioService.esElegibleParaPrestamo(12345678);
-        boolean resultado2 = scoreCrediticioService.esElegibleParaPrestamo(87654321);
+        // El método evaluarScore debe retornar elegibilidad coherente
+        ScoreCrediticioService.ScoreResultado resultado1 = scoreCrediticioService.evaluarScore(12345678);
+        ScoreCrediticioService.ScoreResultado resultado2 = scoreCrediticioService.evaluarScore(87654321);
         
         // Verifica que retorna boolean válido
-        assertTrue(resultado1 == true || resultado1 == false);
-        assertTrue(resultado2 == true || resultado2 == false);
+        boolean elegible1 = resultado1.isElegible();
+        boolean elegible2 = resultado2.isElegible();
+        assertTrue(elegible1 == true || elegible1 == false);
+        assertTrue(elegible2 == true || elegible2 == false);
     }
 
     @Test
-    public void testConsultarScoreDetalladoTieneInformacionCompleta() {
+    public void testEvaluarScoreTieneInformacionCompleta() {
         ScoreCrediticioService.ScoreResultado resultado = 
-            scoreCrediticioService.consultarScoreDetallado(12345678);
+            scoreCrediticioService.evaluarScore(12345678);
         
         assertNotNull(resultado);
         assertTrue(resultado.getScore() >= 1 && resultado.getScore() <= 10);
@@ -67,7 +72,7 @@ public class ScoreCrediticioServiceTest {
         // Prueba múltiples veces para cubrir diferentes scores
         for (int i = 0; i < 50; i++) {
             ScoreCrediticioService.ScoreResultado resultado = 
-                scoreCrediticioService.consultarScoreDetallado(12345678 + i);
+                scoreCrediticioService.evaluarScore(12345678 + i);
             
             String mensaje = resultado.getMensaje();
             int score = resultado.getScore();
@@ -83,6 +88,23 @@ public class ScoreCrediticioServiceTest {
             } else {
                 assertTrue(mensaje.contains("deficiente"));
             }
+        }
+    }
+
+    @Test
+    public void testScoreResultadoCoherencia() {
+        // Test adicional para verificar coherencia interna
+        ScoreCrediticioService.ScoreResultado resultado = 
+            scoreCrediticioService.evaluarScore(12345678);
+        
+        int score = resultado.getScore();
+        boolean elegible = resultado.isElegible();
+        
+        // Verifica coherencia: score >= 6 debe ser elegible
+        if (score >= 6) {
+            assertTrue(elegible, "Score " + score + " debe ser elegible");
+        } else {
+            assertFalse(elegible, "Score " + score + " no debe ser elegible");
         }
     }
 }

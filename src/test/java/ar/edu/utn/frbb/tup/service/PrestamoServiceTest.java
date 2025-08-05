@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,7 +43,7 @@ public class PrestamoServiceTest {
     }
 
     @Test
-    public void testSolicitarPrestamoExitoso() {        
+    public void testSolicitarPrestamoExitoso() {
         PrestamoRequestDto request = new PrestamoRequestDto();
         request.setNumeroCliente(12345678);
         request.setMontoPrestamo(100000);
@@ -55,18 +56,21 @@ public class PrestamoServiceTest {
         Cuenta cuenta = new Cuenta();
         cuenta.setMoneda(TipoMoneda.PESOS);
         cuenta.setBalance(5000);
-       
+
+        ScoreCrediticioService.ScoreResultado scoreResultado = new ScoreCrediticioService.ScoreResultado(8, true,
+                "Buena calificación crediticia");
+
         when(clienteService.buscarClientePorDni(12345678)).thenReturn(cliente);
         when(cuentaService.getCuentasByCliente(12345678)).thenReturn(Arrays.asList(cuenta));
-        when(scoreCrediticioService.consultarScore(12345678)).thenReturn(true);
-        
+        when(scoreCrediticioService.evaluarScore(12345678)).thenReturn(scoreResultado);
+
         PrestamoResponseDto response = prestamoService.solicitarPrestamo(request);
-        
+
         assertEquals("APROBADO", response.getEstado());
         assertEquals("El monto del préstamo fue acreditado en su cuenta", response.getMensaje());
         assertNotNull(response.getPlanPagos());
         assertEquals(12, response.getPlanPagos().size());
-        
+
         verify(prestamoDao, times(1)).save(any(Prestamo.class));
     }
 
@@ -79,7 +83,7 @@ public class PrestamoServiceTest {
         request.setMoneda("PESOS");
 
         when(clienteService.buscarClientePorDni(99999999))
-            .thenThrow(new IllegalArgumentException("El cliente no existe"));
+                .thenThrow(new IllegalArgumentException("El cliente no existe"));
 
         PrestamoResponseDto response = prestamoService.solicitarPrestamo(request);
 
@@ -102,9 +106,12 @@ public class PrestamoServiceTest {
         Cuenta cuenta = new Cuenta();
         cuenta.setMoneda(TipoMoneda.PESOS);
 
+        ScoreCrediticioService.ScoreResultado scoreResultado = new ScoreCrediticioService.ScoreResultado(3, false,
+                "Calificación crediticia deficiente");
+
         when(clienteService.buscarClientePorDni(12345679)).thenReturn(cliente);
         when(cuentaService.getCuentasByCliente(12345679)).thenReturn(Arrays.asList(cuenta));
-        when(scoreCrediticioService.consultarScore(12345679)).thenReturn(false);
+        when(scoreCrediticioService.evaluarScore(12345679)).thenReturn(scoreResultado);
 
         PrestamoResponseDto response = prestamoService.solicitarPrestamo(request);
 
@@ -139,7 +146,7 @@ public class PrestamoServiceTest {
     @Test
     public void testConsultarPrestamosExitoso() {
         long numeroCliente = 12345678;
-        
+
         Cliente cliente = new Cliente();
         cliente.setDni(numeroCliente);
 
@@ -164,7 +171,7 @@ public class PrestamoServiceTest {
 
         assertEquals(numeroCliente, response.getNumeroCliente());
         assertEquals(1, response.getPrestamos().size()); // Solo préstamo activo
-        
+
         PrestamoInfoDto info = response.getPrestamos().get(0);
         assertEquals(100000, info.getMonto());
         assertEquals(12, info.getPlazoMeses());
@@ -177,9 +184,9 @@ public class PrestamoServiceTest {
         long numeroCliente = 99999999;
 
         when(clienteService.buscarClientePorDni(numeroCliente))
-            .thenThrow(new IllegalArgumentException("El cliente no existe"));
+                .thenThrow(new IllegalArgumentException("El cliente no existe"));
 
-        assertThrows(IllegalArgumentException.class, 
-            () -> prestamoService.consultarPrestamos(numeroCliente));
+        assertThrows(IllegalArgumentException.class,
+                () -> prestamoService.consultarPrestamos(numeroCliente));
     }
 }

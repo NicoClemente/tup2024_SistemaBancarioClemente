@@ -103,8 +103,7 @@ public class ClienteServiceTest {
                 .setBalance(500000)
                 .setTipoCuenta(TipoCuenta.CAJA_AHORRO);
 
-        when(clienteDao.find(26456439, true)).thenReturn(pepeRino);
-
+        // Configurar cuenta y cliente
         cuenta.setTitular(pepeRino);
         pepeRino.addCuenta(cuenta);
         clienteService.guardarCliente(pepeRino);
@@ -127,8 +126,6 @@ public class ClienteServiceTest {
                 .setMoneda(TipoMoneda.PESOS)
                 .setBalance(500000)
                 .setTipoCuenta(TipoCuenta.CAJA_AHORRO);
-
-        when(clienteDao.find(26456439, true)).thenReturn(luciano);
 
         // Agrega primera cuenta
         cuenta.setTitular(luciano);
@@ -166,9 +163,7 @@ public class ClienteServiceTest {
         cliente.setFechaNacimiento(LocalDate.of(1985, 5, 15));
         cliente.setTipoPersona(TipoPersona.PERSONA_FISICA);
 
-        when(clienteDao.find(12345678, true)).thenReturn(cliente);
-
-        // CA$
+        // Agrega CA$
         Cuenta cajaAhorroPesos = new Cuenta()
                 .setMoneda(TipoMoneda.PESOS)
                 .setBalance(10000)
@@ -177,7 +172,7 @@ public class ClienteServiceTest {
         cliente.addCuenta(cajaAhorroPesos);
         clienteService.guardarCliente(cliente);
 
-        // CC$
+        // Agrega CC$
         Cuenta cuentaCorrientePesos = new Cuenta()
                 .setMoneda(TipoMoneda.PESOS)
                 .setBalance(20000)
@@ -186,7 +181,7 @@ public class ClienteServiceTest {
         cliente.addCuenta(cuentaCorrientePesos);
         clienteService.guardarCliente(cliente);
 
-        // CAU$S
+        // Agrega CAU$S
         Cuenta cajaAhorroDolares = new Cuenta()
                 .setMoneda(TipoMoneda.DOLARES)
                 .setBalance(1000)
